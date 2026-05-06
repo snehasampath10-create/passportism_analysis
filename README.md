@@ -30,7 +30,17 @@ The top-ranked passport holder can visit or work in most of the world with littl
 
 ## 📸 Dashboard Preview
 
-![Dashboard Overview](screenshots/dashboard_overview.png)
+### Page 1 — Global Overview
+![Global Overview](screenshots/Global%20overview.png)
+
+### Page 2 — India Spotlight
+![India Spotlight](screenshots/India%20spotlight.png)
+
+### Page 3 — Tourism Access
+![Tourism Access](screenshots/Tourism%20access.png)
+
+### Page 4 — Passport vs Wealth
+![Passport vs Wealth](screenshots/passport%20vs%20wealth.png)
 
 ---
 
@@ -39,19 +49,25 @@ The top-ranked passport holder can visit or work in most of the world with littl
 ```
 passportism/
 ├── ingestion/
-│   └── fetch_data.py           # Python ETL scripts to fetch and load raw data
+│   └── unpivot_visa_matrix.py      # Python script to unpivot visa matrix
 ├── dbt/
 │   ├── models/
-│   │   ├── staging/            # Raw → cleaned models
-│   │   └── marts/              # Final analytical tables
+│   │   ├── staging/
+│   │   │   ├── stg_henley_passport_index.sql
+│   │   │   ├── stg_gdp_per_capita.sql
+│   │   │   └── stg_visa_requirements.sql
+│   │   └── marts/
+│   │       ├── dim_passport.sql
+│   │       ├── dim_economy.sql
+│   │       └── fact_visa_requirements.sql
 │   └── dbt_project.yml
-├── analysis/
-│   ├── explore.sql             # Exploratory SQL queries
-│   └── correlations.py        # Python correlation analysis
 ├── powerbi/
-│   └── passportism.pbix        # Power BI dashboard
+│   └── passportism.pbix             # Power BI report file
 ├── screenshots/
-│   └── dashboard_overview.png  # Dashboard preview
+│   ├── Global overview.png
+│   ├── India spotlight.png
+│   ├── Tourism access.png
+│   └── passport vs wealth.png
 └── README.md
 ```
 
@@ -61,7 +77,7 @@ passportism/
 
 | Tool | Purpose |
 |------|---------|
-| Python | Data ingestion and ETL pipeline |
+| Python | Data reshaping — unpivoting visa matrix from wide to long format |
 | PostgreSQL | Data storage and staging |
 | dbt | Data transformation and modelling |
 | SQL | Exploration and analysis |
@@ -75,62 +91,65 @@ passportism/
 | Source | Data | URL |
 |--------|------|-----|
 | Henley Passport Index | Visa-free access count and passport rank by country | [henleypassportindex.com](https://www.henleypassportindex.com) |
-| World Bank | GDP per capita and education index by country | [data.worldbank.org](https://data.worldbank.org) |
-| Visa Requirements Dataset | Tourist and work visa requirements by origin-destination pair | Kaggle |
-| OECD | Skilled worker migration flows | [oecd.org](https://www.oecd.org) |
+| Passport Index Dataset | Visa requirements matrix by origin-destination country pair | [GitHub — ilyankou](https://github.com/ilyankou/passport-index-dataset) |
+| World Bank | GDP per capita by country (2023) | [data.worldbank.org](https://data.worldbank.org) |
 
 ---
 
 ## 🔄 Project Workflow
 
-### 1. Ingestion (`ingestion/fetch_data.py`)
-- Python scripts fetch data from each source
-- Raw data loaded into PostgreSQL staging tables
+### 1. Data Ingestion
+- Raw CSVs downloaded from Kaggle, GitHub and World Bank
+- Loaded into PostgreSQL using `dbt seed`
+- Python script (`unpivot_visa_matrix.py`) reshapes the 199x199 visa matrix into long format (39,402 rows)
 
 ### 2. Transformation (dbt)
-- Staging models clean and standardise raw data
-- Mart models build the final analytical tables:
-  - `dim_country` — country reference with ISO codes, region, continent
-  - `dim_passport` — passport rank and visa-free access count per country
-  - `dim_economy` — GDP per capita, education index, HDI per country
-  - `fact_visa_requirements` — visa type (tourist/work/none) required for each origin-destination pair
+- **Staging models** clean and rename raw columns
+- **Mart models** build the final analytical tables:
+  - `dim_passport` — passport rank, visa-free count, visa-free %, and region per country
+  - `dim_economy` — GDP per capita and income group per country
+  - `fact_visa_requirements` — visa type required for every origin-destination country pair
 
-### 3. Analysis
-- SQL queries answer the 5 core questions
-- Python correlation analysis between passport rank and education/GDP
-
-### 4. Visualisation (Power BI)
-- Page 1: Global passport inequality overview
-- Page 2: Education vs passport rank correlation
-- Page 3: India spotlight — work visa barriers by destination country
-- Page 4: Tourism access — visa burden by passport rank and region
+### 3. Visualisation (Power BI)
+- **Page 1 — Global Overview:** 168-country access gap, global rankings table, passport strength vs GDP scatter plot
+- **Page 2 — India Spotlight:** India rank 147, 170 countries requiring visa, comparison against 7 major world passports
+- **Page 3 — Tourism Access:** Average visa-free access by region, passport inequality within and between regions
+- **Page 4 — Passport vs Wealth:** Scatter plot and bar chart showing correlation between GDP and passport strength by income group
 
 ---
 
 ## 💡 Key Findings
 
-> *To be updated upon project completion.*
+- **Global access gap:** The strongest passport (192 visa-free countries) and weakest (24) differ by 168 destinations — purely based on birthplace
+- **India spotlight:** India ranks 147th with only 56 visa-free destinations and 24.78% world access, compared to Ireland and Germany at rank 6 with 81.86% access
+- **Regional inequality:** Europe averages 185 visa-free countries vs Africa's 64 — a gap of 121 destinations
+- **Internal regional inequality:** Asia has the widest internal gap — Singapore at 192 and Bangladesh at 31, a 161-destination difference within the same continent
+- **Wealth correlation:** High income countries average 165 visa-free destinations vs Low income countries at 55 — but the correlation is not perfect, showing passport strength is not purely about wealth
+- **Tourism burden:** African passport holders can access less than a third of the world visa-free compared to European passport holders
 
 ---
 
 ## 🇮🇳 The India Angle
 
-India ranks 57th on the Henley Passport Index with visa-free access to 57 destinations. Yet India produces some of the world's highest volumes of STEM graduates and skilled professionals. This project uses India as a case study to explore the disconnect between human capital and passport mobility — a gap that affects millions of skilled workers and travellers worldwide, not just Indians.
+India ranks 147th on the passport index with visa-free access to 56 destinations. Yet India produces some of the world's highest volumes of STEM graduates and skilled professionals. This project uses India as a case study to explore the disconnect between human capital and passport mobility — a gap that affects millions of skilled workers and travellers worldwide, not just Indians.
 
 ---
 
 ## 🚀 How to Run
 
 1. Clone this repository
-2. Install dependencies: `pip install -r requirements.txt`
-3. Set up a PostgreSQL database named `passportism`
-4. Run ingestion: `python ingestion/fetch_data.py`
-5. Run dbt models: `cd dbt && dbt run`
-6. Open `powerbi/passportism.pbix` in Power BI Desktop
+2. Install Python dependencies: `pip install pandas`
+3. Install dbt: `pip install dbt-postgres`
+4. Set up a PostgreSQL database named `passportism`
+5. Configure your dbt profile to connect to PostgreSQL — the profile is stored at `~/.dbt/profiles.yml`. Update the host, port, username and password to match your local PostgreSQL setup
+6. Download raw CSVs from the data sources above and place them in `dbt/seeds/`
+7. Run the Python script: `python ingestion/unpivot_visa_matrix.py`
+8. Run dbt: `cd dbt && dbt seed && dbt run`
+9. Open `powerbi/passportism.pbix` in Power BI Desktop and update the PostgreSQL connection string to match your local setup
 
 ---
 
 ## 👩‍💻 Author
 
 **Sneha** — Data Analyst | MSc Business Analytics, University College Cork  
-[LinkedIn](https://linkedin.com/in/sneha-sampath-/)
+[LinkedIn](https://linkedin.com/in/sneha-sampath-/) 
