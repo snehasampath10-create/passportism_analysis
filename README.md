@@ -131,7 +131,7 @@ passportism/
 
 ## 🇮🇳 The India Angle
 
-India ranks 147th on the passport index with visa-free access to 56 destinations. Yet India produces some of the world's highest volumes of STEM graduates and skilled professionals. This project uses India as a case study to explore the disconnect between human capital and passport mobility — a gap that affects millions of skilled workers and travellers worldwide, not just Indians.
+This project is personal. As an Indian professional who has navigated visa applications, sponsorship requirements, and mobility barriers firsthand while building a career across Ireland and India, I wanted to quantify what millions of skilled workers experience daily — the invisible ceiling that a passport creates, regardless of your qualifications or character. India ranks 147th on the passport index with visa-free access to only 56 destinations, yet it produces some of the world's highest volumes of STEM graduates and skilled professionals. This project uses India as a case study to explore that disconnect — a gap that affects millions of people worldwide, not just Indians.
 
 ---
 
